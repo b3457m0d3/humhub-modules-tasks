@@ -3,21 +3,31 @@
 class m131023_165214_initial extends ZDbMigration {
 
     public function up() {
-
-        $this->createTable('task', array(
+        $this->createTable('gmftask_list', array(
             'id' => 'pk',
+            'user_id'    => 'int(11) NOT NULL',
+            'title'      => 'text NOT NULL',
+            'created_at' => 'datetime NOT NULL',
+            'created_by' => 'int(11) NOT NULL',
+            'updated_at' => 'datetime NOT NULL',
+            'updated_by' => 'int(11) NOT NULL',
+        ), '');
+        
+        $this->createTable('gmftask', array(
+            'id' => 'pk',
+            'list_id' => 'int(11) NOT NULL',
             'title' => 'text NOT NULL',
-            'deathline' => 'datetime DEFAULT NULL',
+            'deadline' => 'datetime DEFAULT NULL',
             'max_users' => 'int(11) NOT NULL',
             'status' => 'int(11) NOT NULL',
-            'percent' => 'smallint(6) NOT NULL',
+            'percent' => "smallint(6) NOT NULL DEFAULT 0",
             'created_at' => 'datetime NOT NULL',
             'created_by' => 'int(11) NOT NULL',
             'updated_at' => 'datetime NOT NULL',
             'updated_by' => 'int(11) NOT NULL',
                 ), '');
 
-        $this->createTable('task_user', array(
+        $this->createTable('gmftask_user', array(
             'id' => 'pk',
             'user_id' => 'int(11) NOT NULL',
             'task_id' => 'int(11) NOT NULL',

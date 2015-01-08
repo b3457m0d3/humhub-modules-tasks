@@ -1,6 +1,6 @@
 <?php
 
-class TasksModule extends HWebModule
+class GmftasksModule extends HWebModule
 {
 
     /**
@@ -9,9 +9,9 @@ class TasksModule extends HWebModule
     public function init()
     {
         $this->setImport(array(
-            'tasks.*',
-            'tasks.models.*',
-            'tasks.behaviors.*',
+            'gmftasks.*',
+            'gmftasks.models.*',
+            'gmftasks.behaviors.*',
         ));
     }
 
@@ -31,7 +31,7 @@ class TasksModule extends HWebModule
     public function disable()
     {
         if (parent::disable()) {
-            foreach (Content::model()->findAllByAttributes(array('object_model' => 'Task')) as $content) {
+            foreach (Content::model()->findAllByAttributes(array('object_model' => 'Gmftask')) as $content) {
                 $content->delete();
             }
             return true;
@@ -43,29 +43,29 @@ class TasksModule extends HWebModule
     /**
      * On disabling this module on a space, deleted all module -> space related content/data.
      * Method stub is provided by "SpaceModuleBehavior"
-     * 
+     *
      * @param Space $space
      */
     public function disableSpaceModule(Space $space)
     {
-        foreach (Content::model()->findAllByAttributes(array('space_id' => $space->id, 'object_model' => 'Task')) as $content) {
+        foreach (Content::model()->findAllByAttributes(array('space_id' => $space->id, 'object_model' => 'Gmftask')) as $content) {
             $content->delete();
         }
     }
 
     /**
      * On User delete, delete all task assignments
-     * 
+     *
      * @param type $event
      */
     public static function onUserDelete($event)
     {
 
-        foreach (TaskUser::model()->findAllByAttributes(array('created_by' => $event->sender->id)) as $task) {
-            $task->delete();
+        foreach (GmftaskUser::model()->findAllByAttributes(array('created_by' => $event->sender->id)) as $gmftask) {
+            $gmftask->delete();
         }
-        foreach (TaskUser::model()->findAllByAttributes(array('user_id' => $event->sender->id)) as $task) {
-            $task->delete();
+        foreach (GmftaskUser::model()->findAllByAttributes(array('user_id' => $event->sender->id)) as $gmftask) {
+            $gmftask->delete();
         }
 
         return true;
@@ -74,7 +74,7 @@ class TasksModule extends HWebModule
     /**
      * On build of a Space Navigation, check if this module is enabled.
      * When enabled add a menu item
-     * 
+     *
      * @param type $event
      */
     public static function onSpaceMenuInit($event)
@@ -83,13 +83,13 @@ class TasksModule extends HWebModule
         $space = Yii::app()->getController()->getSpace();
 
         // Is Module enabled on this space?
-        if ($space->isModuleEnabled('tasks')) {
+        if ($space->isModuleEnabled('gmftasks')) {
             $event->sender->addItem(array(
-                'label' => Yii::t('TasksModule.base', 'Tasks'),
+                'label' => Yii::t('GmftasksModule.base', 'Gmftasks'),
                 'group' => 'modules',
-                'url' => Yii::app()->createUrl('/tasks/task/show', array('sguid' => $space->guid)),
+                'url' => Yii::app()->createUrl('/gmftasks/gmftask/show', array('sguid' => $space->guid)),
                 'icon' => '<i class="fa fa-check-square"></i>',
-                'isActive' => (Yii::app()->controller->module && Yii::app()->controller->module->id == 'tasks'),
+                'isActive' => (Yii::app()->controller->module && Yii::app()->controller->module->id == 'gmftasks'),
             ));
         }
     }
@@ -99,7 +99,7 @@ class TasksModule extends HWebModule
     public static function onDashboardSidebarInit($event)
     {
 
-        $event->sender->addWidget('application.modules.tasks.widgets.MyTasksWidget', array(), array('sortOrder' => 600));
+        $event->sender->addWidget('application.modules.gmftasks.widgets.GmfTasksWidget', array(), array('sortOrder' => 600));
 
     }
 }

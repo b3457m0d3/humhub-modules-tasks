@@ -1,6 +1,6 @@
 <?php
 
-class TaskController extends Controller {
+class GmftaskController extends Controller {
 
     public $subLayout = "application.modules_core.space.views.space._layout";
 
@@ -37,7 +37,7 @@ class TaskController extends Controller {
     public function actions() {
         return array(
             'stream' => array(
-                'class' => 'application.modules.tasks.TasksStreamAction',
+                'class' => 'application.modules.gmftasks.GmftasksStreamAction',
                 'mode' => 'normal',
             ),
         );
@@ -75,20 +75,20 @@ class TaskController extends Controller {
         $this->forcePostRequest();
         $_POST = Yii::app()->input->stripClean($_POST);
 
-        $task = new Task();
-        $task->content->populateByForm();
-        $task->title = Yii::app()->request->getParam('title');
-        $task->max_users = Yii::app()->request->getParam('max_users',1);
-        $task->deadline = Yii::app()->request->getParam('deadline');
-        $task->preassignedUsers = Yii::app()->request->getParam('preassignedUsers');
+        $gmftask = new Gmftask();
+        $gmftask->content->populateByForm();
+        $gmftask->title = Yii::app()->request->getParam('title');
+        $gmftask->max_users = Yii::app()->request->getParam('max_users',1);
+        $gmftask->deadline = Yii::app()->request->getParam('deadline');
+        $gmftask->preassignedUsers = Yii::app()->request->getParam('preassignedUsers');
 
-        $task->status = Task::STATUS_OPEN;
+        $gmftask->status = Gmftask::STATUS_OPEN;
 
-        if ($task->validate()) {
-            $task->save();
-            $this->renderJson(array('wallEntryId' => $task->content->getFirstWallEntryId()));
+        if ($gmftask->validate()) {
+            $gmftask->save();
+            $this->renderJson(array('wallEntryId' => $gmftask->content->getFirstWallEntryId()));
         } else {
-            $this->renderJson(array('errors' => $task->getErrors()), false);
+            $this->renderJson(array('errors' => $gmftask->getErrors()), false);
         }
     }
 
@@ -96,12 +96,12 @@ class TaskController extends Controller {
 
         $workspace = $this->getSpace();
 
-        $taskId = Yii::app()->request->getParam('taskId');
-        $task = Task::model()->findByPk($taskId);
+        $gmftaskId = Yii::app()->request->getParam('gmftaskId');
+        $gmftask = Gmftask::model()->findByPk($gmftaskId);
 
-        if ($task->content->canRead()) {
-            $task->assignUser();
-            $this->printTask($task);
+        if ($gmftask->content->canRead()) {
+            $gmftask->assignUser();
+            $this->printTask($gmftask);
         } else {
             throw new CHttpException(401, 'Could not access task!');
         }
@@ -112,12 +112,12 @@ class TaskController extends Controller {
 
         $workspace = $this->getSpace();
 
-        $taskId = Yii::app()->request->getParam('taskId');
-        $task = Task::model()->findByPk($taskId);
+        $gmftaskId = Yii::app()->request->getParam('gmftaskId');
+        $gmftask = Task::model()->findByPk($gmftaskId);
 
-        if ($task->content->canRead()) {
-            $task->unassignUser();
-            $this->printTask($task);
+        if ($gmftask->content->canRead()) {
+            $gmftask->unassignUser();
+            $this->printTask($gmftask);
         } else {
             throw new CHttpException(401, 'Could not access task!');
         }
@@ -128,16 +128,16 @@ class TaskController extends Controller {
 
         $workspace = $this->getSpace();
 
-        $taskId = (int) Yii::app()->request->getParam('taskId');
+        $gmftaskId = (int) Yii::app()->request->getParam('gmftaskId');
         $percent = (int) Yii::app()->request->getParam('percent');
-        $task = Task::model()->findByPk($taskId);
+        $gmftask = Task::model()->findByPk($gmftaskId);
 
 
-        if ($task->content->canRead()) {
-            $task->changePercent($percent);
-            $this->printTask($task);
+        if ($gmftask->content->canRead()) {
+            $gmftask->changePercent($percent);
+            $this->printTask($gmftask);
         } else {
-            throw new CHttpException(401, Yii::t('TasksModule.controllers_TaskController', 'Could not access task!'));
+            throw new CHttpException(401, Yii::t('GmftasksModule.controllers_GmftaskController', 'Could not access task!'));
         }
         Yii::app()->end();
     }
@@ -146,14 +146,14 @@ class TaskController extends Controller {
 
         $space = $this->getSpace();
 
-        $taskId = (int) Yii::app()->request->getParam('taskId');
+        $gmftaskId = (int) Yii::app()->request->getParam('gmftaskId');
         $status = (int) Yii::app()->request->getParam('status');
-        $task = Task::model()->findByPk($taskId);
+        $gmftask = GmfTask::model()->findByPk($gmftaskId);
 
-        if ($task->content->canRead()) {
+        if ($gmftask->content->canRead()) {
 
-            $task->changeStatus($status);
-            $this->printTask($task);
+            $gmftask->changeStatus($status);
+            $this->printTask($gmftask);
         } else {
             throw new CHttpException(401, 'Could not access task!');
         }
@@ -167,12 +167,12 @@ class TaskController extends Controller {
      */
     protected function printTask($task) {
 
-        $output = $task->getWallOut();
+        $output = $gmftask->getWallOut();
         Yii::app()->clientScript->render($output);
 
         $json = array();
         $json['output'] = $output;
-        $json['wallEntryId'] = $task->content->getFirstWallEntryId(); // there should be only one
+        $json['wallEntryId'] = $gmftask->content->getFirstWallEntryId(); // there should be only one
         echo CJSON::encode($json);
         Yii::app()->end();
     }

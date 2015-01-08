@@ -2,7 +2,7 @@
 
 class MyTasksWidget extends HWidget {
 
-	protected $themePath = 'modules/tasks';
+	protected $themePath = 'modules/gmftasks';
 
 	/**
 	 * Creates the Wall Widget
@@ -10,10 +10,10 @@ class MyTasksWidget extends HWidget {
 	public function run() {
 
 
-		$tasks = Task::GetUsersOpenTasks();
+		$gfmtasks = Gmftask::GetUsersOpenTasks();
 
-		if (count($tasks) > 0) {
-			$this->render('mytasks', array('tasks'=>$tasks));
+		if (count($gmftasks) > 0) {
+			$this->render('mytasks', array('mytasks'=>$gmftasks));
 		}
 	}
 

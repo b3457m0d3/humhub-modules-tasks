@@ -15,7 +15,7 @@
  * @property string $updated_at
  * @property integer $updated_by
  */
-class Task extends HActiveRecordContent
+class Gmftask extends HActiveRecordContent
 {
 
     public $preassignedUsers;
@@ -41,7 +41,7 @@ class Task extends HActiveRecordContent
      */
     public function tableName()
     {
-        return 'task';
+        return 'gmftask';
     }
 
     /**
@@ -52,8 +52,8 @@ class Task extends HActiveRecordContent
         // NOTE: you should only define rules for those attributes that
         // will receive user inputs.
         return array(
-            array('title,  created_at, created_by, updated_at, updated_by', 'required'),
-            array('max_users, percent, created_by, updated_by', 'numerical', 'integerOnly' => true),
+            array('list_id, title,  created_at, created_by, updated_at, updated_by', 'required'),
+            array('list_id, max_users, percent, created_by, updated_by', 'numerical', 'integerOnly' => true),
             array('deadline', 'date', 'format' => 'yyyy-MM-dd hh:mm:ss', 'allowEmpty' => true),
             array('preassignedUsers, deadline, max_users, min_users', 'safe'),
         );
@@ -67,7 +67,7 @@ class Task extends HActiveRecordContent
         // NOTE: you may need to adjust the relation name and the related
         // class name for the relations automatically generated below.
         return array(
-            'users' => array(self::HAS_MANY, 'TaskUser', 'task_id'),
+            'users' => array(self::HAS_MANY, 'GmftaskUser', 'task_id'),
             'creator' => array(self::BELONGS_TO, 'User', 'created_by'),
         );
     }
@@ -79,12 +79,12 @@ class Task extends HActiveRecordContent
     {
 
         // delete all tasks user assignments
-        $taskUser = TaskUser::model()->findAllByAttributes(array('task_id' => $this->id));
-        foreach ($taskUser as $tu) {
+        $gmftaskUser = GmftaskUser::model()->findAllByAttributes(array('task_id' => $this->id));
+        foreach ($gmftaskUser as $tu) {
             $tu->delete();
         }
 
-        Notification::remove('Task', $this->id);
+        Notification::remove('Gmftask', $this->id);
 
         return parent::delete();
     }
@@ -94,7 +94,7 @@ class Task extends HActiveRecordContent
      */
     public function getWallOut()
     {
-        return Yii::app()->getController()->widget('application.modules.tasks.widgets.TaskWallEntryWidget', array('task' => $this), true);
+        return Yii::app()->getController()->widget('application.modules.gmftasks.widgets.GmfTaskWallEntryWidget', array('gmftask' => $this), true);
     }
 
     public function beforeSave()
@@ -118,8 +118,8 @@ class Task extends HActiveRecordContent
 
         if ($this->isNewRecord) {
             $activity = Activity::CreateForContent($this);
-            $activity->type = "TaskCreated";
-            $activity->module = "tasks";
+            $activity->type = "GmftaskCreated";
+            $activity->module = "gmftasks";
             $activity->save();
             $activity->fire();
 
@@ -143,7 +143,7 @@ class Task extends HActiveRecordContent
     public function getAssignedUsers()
     {
         $users = array();
-        $tus = TaskUser::model()->findAllByAttributes(array('task_id' => $this->id));
+        $tus = GmftaskUser::model()->findAllByAttributes(array('task_id' => $this->id));
         foreach ($tus as $tu) {
             $user = User::model()->findByPk($tu->user_id);
             if ($user != null)
@@ -161,10 +161,10 @@ class Task extends HActiveRecordContent
         if ($user == "")
             $user = Yii::app()->user->getModel();
 
-        $au = TaskUser::model()->findByAttributes(array('task_id' => $this->id, 'user_id' => $user->id));
+        $au = GmftaskUser::model()->findByAttributes(array('task_id' => $this->id, 'user_id' => $user->id));
         if ($au == null) {
 
-            $au = new TaskUser;
+            $au = new GmftaskUser;
             $au->task_id = $this->id;
             $au->user_id = $user->id;
             $au->save();
@@ -178,12 +178,12 @@ class Task extends HActiveRecordContent
             #$activity->fire();
             // Fire Notification to creator
             $notification = new Notification();
-            $notification->class = "TaskAssignedNotification";
+            $notification->class = "GmftaskAssignedNotification";
             $notification->user_id = $au->user_id; // Assigned User
             $notification->space_id = $this->content->space_id;
-            $notification->source_object_model = 'Task';
+            $notification->source_object_model = 'Gmftask';
             $notification->source_object_id = $this->id;
-            $notification->target_object_model = 'Task';
+            $notification->target_object_model = 'Gmftask';
             $notification->target_object_id = $this->id;
             $notification->save();
 
@@ -200,14 +200,14 @@ class Task extends HActiveRecordContent
         if ($user == "")
             $user = Yii::app()->user->getModel();
 
-        $au = TaskUser::model()->findByAttributes(array('task_id' => $this->id, 'user_id' => $user->id));
+        $au = GmftaskUser::model()->findByAttributes(array('task_id' => $this->id, 'user_id' => $user->id));
         if ($au != null) {
             $au->delete();
 
             // Delete Activity for Task Assigned
             $activity = Activity::model()->findByAttributes(array(
-                'type' => 'TaskAssigned',
-                'object_model' => "Task",
+                'type' => 'GmftaskAssigned',
+                'object_model' => "Gmftask",
                 'user_id' => $user->id,
                 'object_id' => $this->id
             ));
@@ -215,7 +215,7 @@ class Task extends HActiveRecordContent
                 $activity->delete();
 
             // Try to delete TaskAssignedNotification if exists
-            foreach (Notification::model()->findAllByAttributes(array('class' => 'TaskAssignedNotification', 'target_object_model' => 'Task', 'target_object_id' => $this->id)) as $notification) {
+            foreach (Notification::model()->findAllByAttributes(array('class' => 'GmftaskAssignedNotification', 'target_object_model' => 'Task', 'target_object_id' => $this->id)) as $notification) {
                 $notification->delete();
             }
 
@@ -233,11 +233,11 @@ class Task extends HActiveRecordContent
         }
 
         if ($newPercent == 100) {
-            $this->changeStatus(Task::STATUS_FINISHED);
+            $this->changeStatus(Gmftask::STATUS_FINISHED);
         }
 
-        if ($this->percent != 100 && $this->status == Task::STATUS_FINISHED) {
-            $this->changeStatus(Task::STATUS_OPEN);
+        if ($this->percent != 100 && $this->status == Gmftask::STATUS_FINISHED) {
+            $this->changeStatus(Gmftask::STATUS_OPEN);
         }
 
         return true;
@@ -249,21 +249,21 @@ class Task extends HActiveRecordContent
 
         // Try to delete Old Finished Activity Activity
         $activity = Activity::model()->findByAttributes(array(
-            'type' => 'TaskFinished',
-            'module' => 'tasks',
-            'object_model' => "Task",
+            'type' => 'GmftaskFinished',
+            'module' => 'gmftasks',
+            'object_model' => "Gmftask",
             'object_id' => $this->id
         ));
         if ($activity) {
             $activity->delete();
         }
 
-        if ($newStatus == Task::STATUS_FINISHED) {
+        if ($newStatus == Gmftask::STATUS_FINISHED) {
 
             // Fire Activity for that
             $activity = Activity::CreateForContent($this);
-            $activity->type = "TaskFinished";
-            $activity->module = "tasks";
+            $activity->type = "GmftaskFinished";
+            $activity->module = "gmftasks";
             $activity->content->user_id = Yii::app()->user->id;
             $activity->save();
             $activity->fire();
@@ -271,12 +271,12 @@ class Task extends HActiveRecordContent
             // Fire Notification to creator
             if ($this->created_by != Yii::app()->user->id) {
                 $notification = new Notification();
-                $notification->class = "TaskFinishedNotification";
+                $notification->class = "GmftaskFinishedNotification";
                 $notification->user_id = $this->created_by; // To Creator
                 $notification->space_id = $this->content->space_id;
-                $notification->source_object_model = 'Task';
+                $notification->source_object_model = 'Gmftask';
                 $notification->source_object_id = $this->id;
-                $notification->target_object_model = 'Task';
+                $notification->target_object_model = 'Gmftask';
                 $notification->target_object_id = $this->id;
                 $notification->save();
             }
@@ -284,7 +284,7 @@ class Task extends HActiveRecordContent
             $this->percent = 100;
         } else {
             // Try to delete TaskFinishedNotification if exists
-            foreach (Notification::model()->findAllByAttributes(array('class' => 'TaskFinishedNotification', 'target_object_model' => 'Task', 'target_object_id' => $this->id)) as $notification) {
+            foreach (Notification::model()->findAllByAttributes(array('class' => 'GmftaskFinishedNotification', 'target_object_model' => 'Gmftask', 'target_object_id' => $this->id)) as $notification) {
                 $notification->delete();
             }
         }
@@ -305,17 +305,17 @@ class Task extends HActiveRecordContent
     public static function GetUsersOpenTasks()
     {
 
-        $sql = " SELECT task.* FROM task_user " .
-                " LEFT JOIN task ON task.id = task_user.task_id " .
-                " WHERE task_user.user_id=:userId AND task.status=:status";
+        $sql = " SELECT gmftask.* FROM gmftask_user " .
+                " LEFT JOIN gmftask ON gmftask.id = gmftask_user.gmftask_id " .
+                " WHERE gmftask_user.user_id=:userId AND gmftask.status=:status";
 
         $params = array();
         $params[':userId'] = Yii::app()->user->id;
-        $params[':status'] = Task::STATUS_OPEN;
+        $params[':status'] = Gmftask::STATUS_OPEN;
 
-        $tasks = Task::model()->findAllBySql($sql, $params);
+        $gmftasks = Gmftask::model()->findAllBySql($sql, $params);
 
-        return $tasks;
+        return $gmftasks;
     }
 
     /**

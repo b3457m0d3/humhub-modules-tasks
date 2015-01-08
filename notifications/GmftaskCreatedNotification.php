@@ -5,12 +5,12 @@
  *
  * @author Luke
  */
-class TaskCreatedNotification extends Notification {
+class GmftaskCreatedNotification extends Notification {
 
     // Path to Web View of this Notification
-    public $webView = "tasks.views.notifications.taskCreated";
+    public $webView = "gmftasks.views.notifications.gmftaskCreated";
     // Path to Mail Template for this notification
-    public $mailView = "application.modules.tasks.views.notifications.taskCreated_mail";
+    public $mailView = "application.modules.gmftasks.views.notifications.gmftaskCreated_mail";
 
 }
 

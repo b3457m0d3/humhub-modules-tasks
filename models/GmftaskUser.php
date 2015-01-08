@@ -12,7 +12,7 @@
  * @property string $updated_at
  * @property integer $updated_by
  */
-class TaskUser extends HActiveRecord
+class GmftaskUser extends HActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
@@ -29,7 +29,7 @@ class TaskUser extends HActiveRecord
 	 */
 	public function tableName()
 	{
-		return 'task_user';
+		return 'gmftask_user';
 	}
 
 	/**
