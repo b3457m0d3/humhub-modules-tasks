@@ -18,14 +18,6 @@
 class GmftaskList extends HActiveRecord
 {
 
-	public $preassignedUsers;
-
-	// Status
-	const STATUS_OPEN = 1;
-	const STATUS_FINISHED = 5;
-
-	public $autoAddToWall = true;
-
 	/**
 	* Returns the static model of the specified AR class.
 	* @param string $className active record class name.
@@ -41,7 +33,7 @@ class GmftaskList extends HActiveRecord
 	*/
 	public function tableName()
 	{
-		return 'gmftasklist';
+		return 'gmftask_list';
 	}
 
 	/**
@@ -65,24 +57,24 @@ class GmftaskList extends HActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-		'users' => array(self::HAS_MANY, 'GmftaskUser', 'task_id'),
+		'tasks' => array(self::HAS_MANY, 'Gmftask', 'list_id'),
 		'creator' => array(self::BELONGS_TO, 'User', 'created_by'),
 		);
 	}
 
 	/**
-	* Deletes a Task including its dependencies.
+	* Deletes a List including its tasks.
 	*/
 	public function delete()
 	{
 
 		// delete all tasks user assignments
-		$gmftaskUser = GmftaskUser::model()->findAllByAttributes(array('task_id' => $this->id));
+		$gmftaskUser = Gmftask::model()->findAllByAttributes(array('list_id' => $this->id));
 		foreach ($gmftaskUser as $tu) {
 			$tu->delete();
 		}
 
-		Notification::remove('Gmftask', $this->id);
+		Notification::remove('GmftaskList', $this->id);
 
 		return parent::delete();
 	}
@@ -97,10 +89,6 @@ class GmftaskList extends HActiveRecord
 
 	public function beforeSave()
 	{
-		if ($this->deadline == '') {
-			$this->deadline = new CDbExpression('NULL');
-		}
-
 		return parent::beforeSave();
 	}
 
