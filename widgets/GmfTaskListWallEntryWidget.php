@@ -1,7 +1,7 @@
 <?php
 
 /**
-* Shows a Task Wall Entry
+* Shows a TaskList Wall Entry
 */
 class GmfTaskListWallEntryWidget extends HWidget {
 
@@ -13,25 +13,13 @@ class GmfTaskListWallEntryWidget extends HWidget {
 		$assetPrefix = Yii::app()->assetManager->publish(dirname(__FILE__) . '/../resources', true, 0, defined('YII_DEBUG'));
 		Yii::app()->clientScript->registerCssFile($assetPrefix . '/gmftasks.css');
 
-		// Check if current users is assigned to this task (faster way)
-		/*
-		foreach ($assignedUsers as $au) {
-		if ($au->id == Yii::app()->user->id) {
-		$assignedToCurrentUser=true;
-		break;
+
+		$this->render('gmflistentry', array(
+			'gmftasklist' => $this->gmftasklist,
+			'user' => $user,
+			'space' => $this->gmftasklist->content->container,
+		));
 	}
-}
-
-'assignedUsers' => $assignedUsers,
-'assignedToCurrentUser' => $assignedToCurrentUser
-
-*/
-$this->render('gmflistentry', array(
-	'gmftasklist' => $this->gmftasklist,
-	'user' => $user,
-	'space' => $this->gmftasklist->content->container,
-));
-}
 
 }
 
